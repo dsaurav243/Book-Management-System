@@ -6,7 +6,18 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'book_management_system.settings')
+    environment = os.getenv('ENVIRONMENT', 'development')
+    
+    if environment == 'prod':
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'book_management_system.settings.prod')
+    elif environment == 'stag':
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'book_management_system.settings.stage')
+    elif environment == 'dev':
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'book_management_system.settings.stage')
+    else:
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'book_management_system.settings.base')
+
+
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

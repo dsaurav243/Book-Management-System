@@ -11,6 +11,16 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'book_management_system.settings')
+environment = os.getenv('ENVIRONMENT', 'development')
+
+if environment == 'prod':
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'book_management_system.settings.prod')
+elif environment == 'stag':
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'book_management_system.settings.stage')
+elif environment == 'dev':
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'book_management_system.settings.stage')
+else:
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'book_management_system.settings.base')
+
 
 application = get_wsgi_application()
