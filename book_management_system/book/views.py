@@ -6,13 +6,19 @@ from .serializers import BookSerializer, ReviewSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound, ValidationError
-from common.llama_model import generate_summary
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+# from common.llama_model import generate_summary
 
 class BookAPIView(APIView):
     """API endpoint for managing books."""
 
     permission_classes = [IsAuthenticated]
-
+    @swagger_auto_schema(
+        operation_description="Add a new book",
+        request_body=BookSerializer,
+        responses={201: BookSerializer}
+    )
     def post(self, request):
         """Create a new book."""
         serializer = BookSerializer(data=request.data)
@@ -21,6 +27,15 @@ class BookAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         raise ValidationError(serializer.errors)
 
+    # For GET request, you use query_serializer or manual_parameters
+    @swagger_auto_schema(
+        operation_description="Retrieve all books",
+        responses={200: BookSerializer(many=True)},
+        manual_parameters=[
+            openapi.Parameter('author', openapi.IN_QUERY, description="Author name", type=openapi.TYPE_STRING),
+            openapi.Parameter('genre', openapi.IN_QUERY, description="Genre of the book", type=openapi.TYPE_STRING)
+        ]
+    )
     def get(self, request):
         """Retrieve all books."""
         books = Book.objects.all()
@@ -115,48 +130,48 @@ class RecommendationAPIView(APIView):
         serializer = BookSerializer(recommended_books, many=True)
         return Response(serializer.data)
 
-class GenerateSummaryAPIView(APIView):
-    """API endpoint to generate a summary for a given book content."""
+# class GenerateSummaryAPIView(APIView):
+#     """API endpoint to generate a summary for a given book content."""
 
-    permission_classes = [IsAuthenticated]
+#     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        """Generate a summary for a given book content."""
-        content = request.data.get('content')
-        if not content:
-            raise ValidationError("Content is required to generate a summary.")
+#     def post(self, request):
+#         """Generate a summary for a given book content."""
+#         content = request.data.get('content')
+#         if not content:
+#             raise ValidationError("Content is required to generate a summary.")
         
-        # Placeholder for summary generation logic
-        generated_summary = f"Generated summary for the content: {content[:50]}..."  # Just a placeholder
+#         # Placeholder for summary generation logic
+#         generated_summary = f"Generated summary for the content: {content[:50]}..."  # Just a placeholder
 
-        return Response({"summary": generated_summary}, status=status.HTTP_200_OK)
+#         return Response({"summary": generated_summary}, status=status.HTTP_200_OK)
 
-class GenerateBookSummaryAPIView(APIView):
-    """API to generate a summary for a book's content."""
+# class GenerateBookSummaryAPIView(APIView):
+#     """API to generate a summary for a book's content."""
 
-    def post(self, request):
-        """Generate a summary for the provided book content."""
-        content = request.data.get('content')
-        if not content:
-            return Response({"error": "Book content is required."}, status=status.HTTP_400_BAD_REQUEST)
+#     def post(self, request):
+#         """Generate a summary for the provided book content."""
+#         content = request.data.get('content')
+#         if not content:
+#             return Response({"error": "Book content is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            summary = generate_summary(content)
-            return Response({"summary": summary}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#         try:
+#             summary = generate_summary(content)
+#             return Response({"summary": summary}, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class GenerateReviewSummaryAPIView(APIView):
-    """API to generate a summary for a review's content."""
+# class GenerateReviewSummaryAPIView(APIView):
+#     """API to generate a summary for a review's content."""
 
-    def post(self, request):
-        """Generate a summary for the provided review content."""
-        review_content = request.data.get('review_content')
-        if not review_content:
-            return Response({"error": "Review content is required."}, status=status.HTTP_400_BAD_REQUEST)
+#     def post(self, request):
+#         """Generate a summary for the provided review content."""
+#         review_content = request.data.get('review_content')
+#         if not review_content:
+#             return Response({"error": "Review content is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            summary = generate_summary(review_content)
-            return Response({"summary": summary}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#         try:
+#             summary = generate_summary(review_content)
+#             return Response({"summary": summary}, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
